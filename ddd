@@ -1,0 +1,285 @@
+
+-- CAMERA MACRO V2.0
+-- Premium GUI Prototype
+-- For Roblox Studio LocalScript
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "CameraMacroV20"
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame")
+main.Size = UDim2.fromOffset(570, 390)
+main.Position = UDim2.new(.5,-285,.5,-195)
+main.BackgroundColor3 = Color3.fromRGB(17,19,33)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,14)
+corner.Parent = main
+
+local function make(class,parent,props)
+    local obj = Instance.new(class)
+    for k,v in pairs(props) do
+        obj[k] = v
+    end
+    obj.Parent = parent
+    return obj
+end
+
+local function label(parent,text,pos,size,color)
+    return make("TextLabel",parent,{
+        Text=text,
+        Position=pos,
+        Size=size,
+        BackgroundTransparency=1,
+        TextColor3=color or Color3.new(1,1,1),
+        TextSize=14,
+        Font=Enum.Font.GothamMedium,
+        TextXAlignment=Enum.TextXAlignment.Left
+    })
+end
+
+-- Header
+local header = make("Frame",main,{
+    Size=UDim2.new(1,0,0,55),
+    BackgroundColor3=Color3.fromRGB(25,27,45),
+    BorderSizePixel=0
+})
+
+label(header,"✦ CAMERA MACRO",UDim2.fromOffset(18,5),
+    UDim2.fromOffset(250,25),
+    Color3.fromRGB(180,160,255))
+
+label(header,"PREMIUM V2.0",UDim2.fromOffset(19,29),
+    UDim2.fromOffset(150,17),
+    Color3.fromRGB(135,140,170))
+
+local minimized = false
+
+local mini = make("TextButton",header,{
+    Text="—",
+    Position=UDim2.new(1,-75,0,10),
+    Size=UDim2.fromOffset(28,28),
+    BackgroundColor3=Color3.fromRGB(65,60,110),
+    TextColor3=Color3.new(1,1,1),
+    Font=Enum.Font.GothamBold,
+    TextSize=18
+})
+
+local close = make("TextButton",header,{
+    Text="×",
+    Position=UDim2.new(1,-40,0,10),
+    Size=UDim2.fromOffset(28,28),
+    BackgroundColor3=Color3.fromRGB(130,48,68),
+    TextColor3=Color3.new(1,1,1),
+    Font=Enum.Font.GothamBold,
+    TextSize=18
+})
+
+-- Sidebar
+local sidebar = make("Frame",main,{
+    Position=UDim2.fromOffset(0,55),
+    Size=UDim2.fromOffset(155,335),
+    BackgroundColor3=Color3.fromRGB(22,24,40),
+    BorderSizePixel=0
+})
+
+local content = make("Frame",main,{
+    Position=UDim2.fromOffset(155,55),
+    Size=UDim2.new(1,-155,1,-55),
+    BackgroundColor3=Color3.fromRGB(17,19,33),
+    BorderSizePixel=0
+})
+
+local pages = {}
+local activePage
+
+local function createPage(name)
+    local page = make("Frame",content,{
+        Name=name,
+        Size=UDim2.fromScale(1,1),
+        BackgroundTransparency=1,
+        Visible=false
+    })
+    pages[name]=page
+    return page
+end
+
+local function showPage(name)
+    for n,p in pairs(pages) do
+        p.Visible = n==name
+    end
+    activePage=name
+end
+
+local function nav(name,y)
+    local b=make("TextButton",sidebar,{
+        Text="   "..name,
+        Position=UDim2.fromOffset(10,y),
+        Size=UDim2.fromOffset(135,38),
+        BackgroundColor3=Color3.fromRGB(36,39,62),
+        TextColor3=Color3.new(1,1,1),
+        TextSize=13,
+        Font=Enum.Font.GothamMedium
+    })
+    make("UICorner",b,{
+        CornerRadius=UDim.new(0,7)
+    })
+    b.MouseButton1Click:Connect(function()
+        showPage(name)
+    end)
+end
+
+local dashboard=createPage("Dashboard")
+local recorder=createPage("Recorder")
+local loop=createPage("Loop Settings")
+local upgrade=createPage("Auto Upgrade")
+local settings=createPage("Settings")
+
+nav("Dashboard",15)
+nav("Recorder",60)
+nav("Loop Settings",105)
+nav("Auto Upgrade",150)
+nav("Settings",195)
+
+local function heading(page,text)
+    label(page,text,UDim2.fromOffset(20,15),
+        UDim2.new(1,-30,0,35),
+        Color3.fromRGB(185,165,255))
+end
+
+local function button(page,text,y,callback)
+    local b=make("TextButton",page,{
+        Text=text,
+        Position=UDim2.fromOffset(20,y),
+        Size=UDim2.new(1,-40,0,38),
+        BackgroundColor3=Color3.fromRGB(55,62,105),
+        TextColor3=Color3.new(1,1,1),
+        Font=Enum.Font.GothamMedium,
+        TextSize=13
+    })
+    make("UICorner",b,{
+        CornerRadius=UDim.new(0,8)
+    })
+    b.MouseButton1Click:Connect(callback)
+    return b
+end
+
+local recording=false
+local playing=false
+local looping=false
+local autoUpgrade=false
+local replayDelay=5
+
+-- Dashboard
+heading(dashboard,"DASHBOARD")
+label(dashboard,"Welcome to Camera Macro",
+    UDim2.fromOffset(20,65),UDim2.new(1,-30,0,30))
+label(dashboard,"Version 2.0 | Premium Interface",
+    UDim2.fromOffset(20,100),UDim2.new(1,-30,0,25),
+    Color3.fromRGB(145,145,175))
+
+button(dashboard,"OPEN MACRO RECORDER",145,
+    function() showPage("Recorder") end)
+
+button(dashboard,"OPEN SETTINGS",195,
+    function() showPage("Settings") end)
+
+-- Recorder
+heading(recorder,"MACRO RECORDER")
+
+button(recorder,"● RECORD",65,function()
+    recording=true
+    print("Record enabled")
+end)
+
+button(recorder,"■ STOP",110,function()
+    recording=false
+    playing=false
+    print("Stopped")
+end)
+
+button(recorder,"▶ PLAY",155,function()
+    if not recording then
+        playing=true
+        print("Playback requested")
+    end
+end)
+
+-- Loop
+heading(loop,"LOOP SETTINGS")
+
+local loopBtn=button(loop,"LOOP: OFF",65,function()
+    looping=not looping
+    loopBtn.Text="LOOP: "..(looping and "ON" or "OFF")
+end)
+
+local delayBox=make("TextBox",loop,{
+    Position=UDim2.fromOffset(20,120),
+    Size=UDim2.new(1,-40,0,38),
+    BackgroundColor3=Color3.fromRGB(36,39,62),
+    TextColor3=Color3.new(1,1,1),
+    Text="5",
+    PlaceholderText="Replay delay in seconds",
+    Font=Enum.Font.Gotham,
+    TextSize=14
+})
+
+delayBox.FocusLost:Connect(function()
+    local n=tonumber(delayBox.Text)
+    if n and n>=1 then
+        replayDelay=math.min(n,3600)
+    else
+        delayBox.Text=tostring(replayDelay)
+    end
+end)
+
+-- Auto Upgrade
+heading(upgrade,"AUTO UPGRADE")
+
+local upgradeBtn=button(upgrade,"AUTO UPGRADE: OFF",65,function()
+    autoUpgrade=not autoUpgrade
+    upgradeBtn.Text="AUTO UPGRADE: "..(autoUpgrade and "ON" or "OFF")
+end)
+
+label(upgrade,"Requires an authorized game integration",
+    UDim2.fromOffset(20,120),UDim2.new(1,-30,0,40),
+    Color3.fromRGB(155,155,180))
+
+-- Settings
+heading(settings,"SETTINGS")
+
+button(settings,"MOUSE FREE",65,function()
+    print("Mouse free setting requested")
+end)
+
+button(settings,"STOP ALL",110,function()
+    recording=false
+    playing=false
+    looping=false
+    autoUpgrade=false
+    print("All stopped")
+end)
+
+-- Minimize
+local oldSize=main.Size
+
+mini.MouseButton1Click:Connect(function()
+    minimized=not minimized
+    sidebar.Visible=not minimized
+    content.Visible=not minimized
+    main.Size=minimized and UDim2.fromOffset(570,55) or oldSize
+end)
+
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+showPage("Dashboard")
+gui.Parent=player:WaitForChild("PlayerGui")
